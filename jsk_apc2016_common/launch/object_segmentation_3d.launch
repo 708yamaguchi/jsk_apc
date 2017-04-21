@@ -13,7 +13,7 @@
   <rosparam command="load" file="$(arg LABEL_YAML)" ns="label_names" />
 
   <node name="fcn_object_segmentation"
-        pkg="jsk_perception" type="fcn_object_segmentation.py">
+        pkg="jsk_perception" type="fcn_object_segmentation.py" output="screen">
     <remap from="~input" to="$(arg INPUT_IMAGE)" />  <!-- rgb timestamp -->
     <rosparam subst_value="true">
       gpu: $(arg GPU)
