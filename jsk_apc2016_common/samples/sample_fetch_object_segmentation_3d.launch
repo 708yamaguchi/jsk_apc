@@ -10,8 +10,8 @@
   <!-- visualization -->
   <node name="label_image_decomposer"
         pkg="jsk_perception" type="label_image_decomposer.py">
-    <remap from="~input" to="$(arg INPUT_IMAGE)" /> 
-    <remap from="~input/label" to="fcn_object_segmentation/output" /> 
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input/label" to="fcn_object_segmentation/output" />
     <remap from="~label_names" to="label_names" />
     <rosparam>
       queue_size: 100
@@ -20,7 +20,7 @@
 
   <arg name="NODELET_MANAGER" value="sample_manager" />
   <node name="$(arg NODELET_MANAGER)"
-        pkg="nodelet" type="nodelet" args="manager" /> 
+        pkg="nodelet" type="nodelet" args="manager" />
   <param name="label_to_mask/label_value" value="14" />
 
   <node name="multi_plane_estimate" pkg="nodelet" type="nodelet"
@@ -59,8 +59,8 @@
   </node>
 
 
-   <!-- <include file="$(find jsk_apc2016_common)/launch/object_segmentation_3d.launch"> -->
-   <include file="$(find jsk_arc2017_common)/launch/object_segmentation_3d.launch">
+  <include file="$(find jsk_apc2016_common)/launch/object_segmentation_3d.launch">
+   <!-- <include file="$(find jsk_arc2017_common)/launch/object_segmentation_3d.launch"> -->
     <arg name="NODELET_MANAGER" value="$(arg NODELET_MANAGER)" />
     <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
     <arg name="INPUT_CLOUD" value="extract_indices_table/output" />
