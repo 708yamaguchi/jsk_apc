@@ -1,0 +1,39 @@
+<launch>
+  <!-- for receive pack -->
+  <node pkg="rosserial_python" type="serial_node.py"
+        name="serial_node0" respawn="true">
+    <param name="port" value="/dev/ttyACM0" />
+    <param name="baud" value="9600" />
+    <remap from="proximity_sensor" to="proximity_sensor0" />
+  </node>
+
+  <node pkg="rosserial_python" type="serial_node.py"
+        name="serial_node1" respawn="true">
+    <param name="port" value="/dev/ttyACM1" />
+    <param name="baud" value="9600" />
+    <remap from="proximity_sensor" to="proximity_sensor1" />
+  </node>
+
+  <node pkg="rosserial_python" type="serial_node.py"
+        name="serial_node2" respawn="true">
+    <param name="port" value="/dev/ttyACM2" />
+    <param name="baud" value="9600" />
+    <remap from="proximity_sensor" to="proximity_sensor2" />
+  </node>
+
+  <node pkg="rosserial_python" type="serial_node.py"
+        name="serial_node3" respawn="true">
+    <param name="port" value="/dev/ttyACM3" />
+    <param name="baud" value="9600" />
+    <remap from="proximity_sensor" to="proximity_sensor3" />
+  </node>
+
+  <node pkg="rosserial_python" type="serial_node.py"
+        name="serial_node4" respawn="true">
+    <param name="port" value="/dev/ttyACM4" />
+    <param name="baud" value="9600" />
+    <remap from="proximity_sensor" to="proximity_sensor4" />
+  </node>
+
+
+</launch>

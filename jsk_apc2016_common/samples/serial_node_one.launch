@@ -1,0 +1,9 @@
+<launch>
+  <!-- for receive pack -->
+  <arg name="port" default="/dev/ttyUSB0" />
+  <node pkg="rosserial_python" type="serial_node.py"
+        name="serial_node0" respawn="true">
+    <param name="port" value="$(arg port)" />
+    <param name="baud" value="57600" />
+   </node>
+</launch>
