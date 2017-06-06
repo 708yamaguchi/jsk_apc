@@ -144,12 +144,66 @@
   (send *ri* :go-grasp :effort 60))
 
 
+(defun FA-I-calibration()
+  (ros::spin-once)
+  (setq proximity0-init-value (send proximity0-obj :average))
+  (setq proximity1-init-value (send proximity1-obj :average))
+  (setq proximity2-init-value (send proximity2-obj :average))
+  (setq proximity3-init-value (send proximity3-obj :average))
+  (setq proximity4-init-value (send proximity4-obj :average)))
+
+
+(defun calc-arrow-size-in-rviz (proximity-msg init-value)
+  (- 10 (* 10 (expt (max (- (send proximity-msg :average) init-value) 1) (/ -1.0 5)))))
+
+
+(defun cb-proximity (proximity-arr)
+    (setq proximity0-obj (elt (send proximity-arr :proximities) 0))
+    (setq proximity1-obj (elt (send proximity-arr :proximities) 1))
+    (setq proximity2-obj (elt (send proximity-arr :proximities) 2))
+    (setq proximity3-obj (elt (send proximity-arr :proximities) 3))
+    (setq proximity4-obj (elt (send proximity-arr :proximities) 4))
+    
+    ;;for sensor0
+    (if (boundp 'proximity0-init-value)
+	(publish-FA-I-sensor-marker 0 (calc-arrow-size-in-rviz proximity0-obj proximity0-init-value)))
+    (if (equal "T" (send proximity0-obj :mode))
+	(setq grasp-flag-top t))
+
+    ;;for sensor1
+    (if (boundp 'proximity1-init-value)
+	(publish-FA-I-sensor-marker 1 (calc-arrow-size-in-rviz proximity1-obj proximity1-init-value)))
+
+    ;;for sensor2
+    (if (boundp 'proximity2-init-value)
+	(publish-FA-I-sensor-marker 2 (calc-arrow-size-in-rviz proximity2-obj proximity2-init-value)))
+
+    ;;for sensor3
+    (if (boundp 'proximity3-init-value)
+	(publish-FA-I-sensor-marker 3 (calc-arrow-size-in-rviz proximity3-obj proximity3-init-value)))
+    (if (equal "T" (send proximity3-obj :mode))
+	(setq grasp-flag-top t))
+
+    ;;for sensor4
+    (if (boundp 'proximity4-init-value)
+	(publish-FA-I-sensor-marker 4 (calc-arrow-size-in-rviz proximity4-obj proximity4-init-value)))
+    (if (equal "T" (send proximity4-obj :mode))
+	(setq grasp-flag-top t)))
+  
+
+(defun echo-proximity()
+    (ros::subscribe
+     "/gripper_front/limb/right/proximity_array"
+     force_proximity_ros::ProximityArray #'cb-proximity 1))
+
+
+;;proximity1,2 are for width.
+;;proximity0,3,4 are for depth.
+
 (defun grope-from-front()
   ;before use this function, do below
   ;(send *ri* :angle-vector (send *fetch* :inverse-kinematics (make-coords :pos (v+ (float-vector (- x 100) y  table-height) (float-vector 0 width-sum i)))))
 
-  ;;proximity1,2 are for width.
-  ;;proximity0,3,4 are for depth.
   (echo-proximity)
   (unix:sleep 1)
 
@@ -160,11 +214,6 @@
 	(i 0) (width-sum 0))
 
     (FA-I-calibration)
-    ;(ros::spin-once)
-    ;;sensor calibration (far away from the target)
-    ;; (setq proximity0-init-value (send proximity0-obj :average))
-    ;; (setq proximity1-init-value (send proximity1-obj :average))
-    ;; (setq proximity2-init-value (send proximity2-obj :average))
 
     (setq grasp-flag-front nil)
     ;(while (null grasp-flag-front)
@@ -193,79 +242,10 @@
   (try-grasp))
 
 
-(defun FA-I-calibration()
-  (ros::spin-once)
-  (setq proximity0-init-value (send proximity0-obj :average))
-  (setq proximity1-init-value (send proximity1-obj :average))
-  (setq proximity2-init-value (send proximity2-obj :average))
-  (setq proximity3-init-value (send proximity3-obj :average))
-  (setq proximity4-init-value (send proximity4-obj :average)))
-
-
-(defun calc-arrow-size-in-rviz (proximity-msg init-value)
-  (- 10 (* 10 (expt (max (- (send proximity-msg :average) init-value) 1) (/ -1.0 5)))))
-
-;; TODO START ;;
-;; load this file, echo-proximity, fa-i-calibration
-
-(defun cb-proximity0 (proximity-msg)
-  (if (boundp 'proximity0-init-value)
-      (publish-FA-I-sensor-marker 0 (calc-arrow-size-in-rviz proximity-msg proximity0-init-value)))
-  (setq proximity0-obj proximity-msg)
-    (if (equal "T" (send proximity-msg :mode))
-	(setq grasp-flag-front t)))
-
-(defun cb-proximity1 (proximity-msg)
-  (if (boundp 'proximity1-init-value)
-      (publish-FA-I-sensor-marker 1 (calc-arrow-size-in-rviz proximity-msg proximity1-init-value)))
-  (setq proximity1-obj proximity-msg))
-
-(defun cb-proximity2 (proximity-msg)
-  (if (boundp 'proximity2-init-value)
-      (publish-FA-I-sensor-marker 2 (calc-arrow-size-in-rviz proximity-msg proximity2-init-value)))
-  (setq proximity2-obj proximity-msg))
-
-(defun cb-proximity3 (proximity-msg)
-  (if (boundp 'proximity3-init-value)
-      (publish-FA-I-sensor-marker 3 (calc-arrow-size-in-rviz proximity-msg proximity3-init-value)))
-  (setq proximity3-obj proximity-msg)
-  (if (equal "T" (send proximity-msg :mode))
-	(setq grasp-flag-top t)))
-
-(defun cb-proximity4 (proximity-msg)
-  (if (boundp 'proximity4-init-value)
-      (publish-FA-I-sensor-marker 4 (calc-arrow-size-in-rviz proximity-msg proximity4-init-value)))
-  (setq proximity4-obj proximity-msg)
-  (if (equal "T" (send proximity-msg :mode))
-	(setq grasp-flag-top t)))
-
-;; TODO END ;;
-
-(defun echo-proximity()
-    (ros::subscribe
-     "/proximity_sensor0"
-     force_proximity_ros::proximity #'cb-proximity0 10)
-    (ros::subscribe
-     "/proximity_sensor1"
-     force_proximity_ros::proximity #'cb-proximity1 10)
-    (ros::subscribe
-     "/proximity_sensor2"
-     force_proximity_ros::proximity #'cb-proximity2 10)
-    (ros::subscribe
-     "/proximity_sensor3"
-     force_proximity_ros::proximity #'cb-proximity3 10)
-    (ros::subscribe
-     "/proximity_sensor4"
-     force_proximity_ros::proximity #'cb-proximity4 10))
-
-
-
 (defun grope-from-top()
   ;before use this function, do below
   ;(send *ri* :angle-vector (send *fetch* :inverse-kinematics (make-coords :pos (float-vector x y (+ table-height 30)) :rpy #f(0 1.57 0))))
 
-  ;;proximity1,2 are for width.
-  ;;proximity0,3,4 is for depth.
   (echo-proximity)
 
   (let (;(proximity0-init-value) (proximity3-init-value) (proximity4-init-value)
@@ -274,11 +254,6 @@
 	(i 0) (width-sum 0))
 
     (FA-I-calibration)
-    ;(ros::spin-once)
-    ;;sensor calibration (far away from the target)
-    ;; (setq proximity0-init-value (send proximity0-obj :average))
-    ;; (setq proximity3-init-value (send proximity3-obj :average))
-    ;; (setq proximity4-init-value (send proximity4-obj :average))
 
     (setq grasp-flag-top nil)
     (while (null grasp-flag-top)
@@ -311,6 +286,83 @@
 
     (send *fetch* :inverse-kinematics (make-coords :pos (float-vector x y (+ table-height 30)) :rpy #f(0 1.57 0)))
     (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 3000)))
+
+
+(defun find-surface-from-front()
+  ;before use this function, do below
+  ;(send *ri* :angle-vector (send *fetch* :inverse-kinematics (make-coords :pos #f(800 0 810))))
+
+  (echo-proximity)
+  (unix:sleep 1)
+  (ros::spin-once)
+  (FA-I-calibration)
+
+  (let (;(proximity0-init-value) (proximity3-init-value) (proximity4-init-value)
+	(proximity3-prev 0)
+	(proximity3 0)
+	(i 0) (threshold 30))
+
+    (while (< (- proximity3 proximity3-prev) threshold)
+      (setq i (+ i 10))
+
+      (send *fetch* :inverse-kinematics (make-coords :pos (v+ #f(800 0 810) (float-vector i 0 0))))
+      (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 1000)
+      (send *ri* :wait-interpolation)
+
+      (ros::spin-once)
+
+      (setq proximity3-prev proximity3)
+      (setq proximity3 (- (send proximity3-obj :average) proximity3-init-value))
+      (format t "i : ~A~%" i)
+      (format t "proximity3-prev : ~A~%" proximity3-prev)
+      (format t "proximity3 : ~A~%" proximity3))
+
+    (format t "find surface!~%")))
+
+
+(defun find-surface-from-top()
+  ;before use this function, do below
+  ;(send *ri* :angle-vector (send *fetch* :inverse-kinematics (make-coords :pos #f(800 0 830))))
+
+  (echo-proximity)
+  (unix:sleep 1)
+  (ros::spin-once)
+  (FA-I-calibration)
+
+  (let (;(proximity0-init-value) (proximity3-init-value) (proximity4-init-value)
+	(proximity3-prev 0)
+	(proximity3 0)
+	(i 0) (threshold 30))
+
+    (while (< (- proximity3 proximity3-prev) threshold)
+      (setq i (+ i 5))
+
+      (send *fetch* :inverse-kinematics (make-coords :pos (v- #f(800 0 830) (float-vector 0 0 i)) :rpy (float-vector 0 pi/2 0)))
+      (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 1000)
+      (send *ri* :wait-interpolation)
+
+      (ros::spin-once)
+
+      (setq proximity3-prev proximity3)
+      (setq proximity3 (- (send proximity3-obj :average) proximity3-init-value))
+      (format t "i : ~A~%" i)
+      (format t "proximity3-prev : ~A~%" proximity3-prev)
+      (format t "proximity3 : ~A~%" proximity3))
+
+    (format t "find surface!~%")))
+
+
+
+(defun set-arm (&key (time 10000) (x 800) (y 0) (z 810) (from-front t))
+  (if from-front
+      ;;from front
+      (progn
+	(send *fetch* :inverse-kinematics (make-coords :pos (float-vector x y z)))
+	(move time))
+    ;;from top
+    (progn
+      (send *fetch* :inverse-kinematics (make-coords :pos (float-vector x y z) :rpy (float-vector 0 pi/2 0)))
+      (move time))))
 
 
 ;;try to pick object.
