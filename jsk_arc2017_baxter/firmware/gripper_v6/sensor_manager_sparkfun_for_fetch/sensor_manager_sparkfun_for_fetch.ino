@@ -150,16 +150,20 @@ void setup()
   nh.initNode();
   nh.advertise(gripper_sensor_pub);
 
+  delay(100);
+
   pinMode(PCA9547D_RESET, OUTPUT);
   digitalWrite(PCA9547D_RESET, HIGH);
   Wire.begin();
 
-  int i;
-  for(i=0;i<NSENSORS;i++)
-  {
-    ChgI2CMultiplexer(0x70,i);
-    initVCNL4040(); //Configure sensor
-  }
+
+
+//  int i;
+//  for(i=0;i<NSENSORS;i++)
+//  {
+//    ChgI2CMultiplexer(0x70,i);
+//    initVCNL4040(); //Configure sensor
+//  }
 
   /* pinMode(SS,OUTPUT); */
   /* SPI.setClockDivider(SPI_CLOCK_DIV8); */
@@ -174,19 +178,22 @@ void loop()
   unsigned long time;
   time = millis();
 
-  delay(1);
+  delay(100);
 
-  measure_proximity();
-  measure_pressure_and_flex();
+  /* measure_proximity(); */
+//  gripper_sensor_msg.proximities;
+//  gripper_sensor_msg.proximities_length = NSENSORS;
+//
+//  measure_pressure_and_flex();
+//
+//  gripper_sensor_pub.publish(&gripper_sensor_msg);
 
-  gripper_sensor_pub.publish(&gripper_sensor_msg);
-
-  int i;
-  for(i=0;i<NSENSORS;i++)
-  {
-    ChgI2CMultiplexer(0x70,i);
-    startProxSensor();
-  }
+  /* int i; */
+  /* for(i=0;i<NSENSORS;i++) */
+  /* { */
+  /*   ChgI2CMultiplexer(0x70,i); */
+  /*   startProxSensor(); */
+  /* } */
 
   while (millis() < time + LOOP_TIME); // enforce constant loop time
 
